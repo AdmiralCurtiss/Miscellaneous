@@ -191,8 +191,18 @@ function SwitchViewAt(clip c, clip d, int frame, int dissolveframes) {
 }
 function ReplaceWithPreviousFrame(clip clip, int StartFrame, int AmountOfFrames) {
     start = clip.Trim(0, StartFrame)
-    mid = clip.Trim(StartFrame, StartFrame)
+    mid = clip.Trim(StartFrame, -1)
     end = clip.Trim(StartFrame + AmountOfFrames + 1, 0)
+    mid = mid.Loop(AmountOfFrames, 0, 0)
+    
+    total = start ++ mid ++ end
+    
+    return clip.HasAudio ? AudioDub(total, clip) : total
+}
+function ReplaceWithNextFrame(clip clip, int StartFrame, int AmountOfFrames) {
+    start = clip.Trim(0, StartFrame - 1)
+    mid = clip.Trim(StartFrame + AmountOfFrames, -1)
+    end = clip.Trim(StartFrame + AmountOfFrames, 0)
     mid = mid.Loop(AmountOfFrames, 0, 0)
     
     total = start ++ mid ++ end
