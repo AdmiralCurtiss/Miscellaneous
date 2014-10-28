@@ -41,6 +41,13 @@ def write_ffmpeg_concat(outfile, m3u8, dta=False):
             outfile.write("'\n")
     return
 
+def filecount(m3u8):
+    count = 0
+    for i, line in enumerate(m3u8):
+        if line.strip() != '' and not line.startswith('#'):
+            count += 1
+    return count
+
 def write_cleanup(outfile, m3u8, media_id):
     outfile.write('@echo off\n')
     for i, line in enumerate(m3u8):
@@ -64,6 +71,8 @@ def write_cleanup(outfile, m3u8, media_id):
     outfile.write('del video_urls_' + str(media_id) + '_dta.html\n')
     outfile.write('del video_ffmpeg_' + str(media_id) + '.txt\n')
     outfile.write('del video_ffmpeg_' + str(media_id) + '_dta.txt\n')
+    outfile.write('del video_' + str(media_id) + '.m3u8\n')
+    outfile.write('del video_cleanup_' + str(media_id) + '.bat\n')
     return
     
 if len(sys.argv) < 2:
@@ -91,34 +100,34 @@ print username + ' playing ' + video['video'][0]['category_name']
 print video['video'][0]['media_title']
 print 'Date/Time: ' + video['video'][0]['media_date_added']
 print 'Length:    ' + video['video'][0]['media_duration_format']
+print ''
+print ''
 
 if filename.endswith('m3u8'):
     # for some reason some files are stored as a giant collection of *.ts files, fun
     m3u8url = 'http://edge.bf.hitbox.tv/static/videos/vods' + filename
     request = urllib2.Request(m3u8url)
     result = urllib2.urlopen(request)
-    m3u8 = result.read().split('\n')
+    m3u8full = result.read()
+    with open('video_' + str(media_id) + '.m3u8', 'w') as outfile:
+        outfile.write(m3u8full)
+    m3u8 = m3u8full.split('\n')
     
     baseUrl = m3u8url[:m3u8url.rindex('/')]
     
     # output website with links
     with open('video_urls_' + str(media_id) + '.html', 'w') as outfile:
         write_urls(outfile, m3u8)
-    with open('video_urls_' + str(media_id) + '_dta.html', 'w') as outfile:
-        write_urls(outfile, m3u8, dta=True)
         
-    # output combine file for ffmpeg
-    with open('video_ffmpeg_' + str(media_id) + '.txt', 'w') as outfile:
-        write_ffmpeg_concat(outfile, m3u8)
-    with open('video_ffmpeg_' + str(media_id) + '_dta.txt', 'w') as outfile:
-        write_ffmpeg_concat(outfile, m3u8, dta=True)
-    
     print 'split file, urls in video_urls_' + str(media_id) + '.html'
-    print 'combine with video_ffmpeg_' + str(media_id) + '.bat'
-    with open('video_ffmpeg_' + str(media_id) + '.bat', 'w') as outfile:
-        outfile.write('ffmpeg -f concat -i video_ffmpeg_' + str(media_id) + '.txt -c copy video_' + username + '_' + str(media_id) + '.mkv')
-    with open('video_ffmpeg_' + str(media_id) + '_dta.bat', 'w') as outfile:
-        outfile.write('ffmpeg -f concat -i video_ffmpeg_' + str(media_id) + '_dta.txt -c copy video_' + username + '_' + str(media_id) + '.mkv')
+    print str(filecount(m3u8)) + ' files'
+    print ''
+    print 'combine ts files with:'
+    print 'copy /b *.ts ' + str(media_id) + '.ts'
+    print ''
+    print 'convert to mp4 with:'
+    print 'ffmpeg -i ' + str(media_id) + '.ts -codec copy -bsf:a aac_adtstoasc hitbox_' + username + '_' + str(media_id) + '.mp4'
+    print ''
     
     print 'clean up this mess with video_cleanup_' + str(media_id) + '.bat'
     with open('video_cleanup_' + str(media_id) + '.bat', 'w') as outfile:
