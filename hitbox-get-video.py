@@ -25,6 +25,20 @@ def write_urls(outfile, m3u8, dta=False):
     outfile.write('</body></html>')
     return
 
+def write_rename(outfile, m3u8, dta=False):
+    j = 0
+    for i, line in enumerate(m3u8):
+        if line.strip() != '' and not line.startswith('#'):
+            outfile.write('ren ')
+            if dta:
+                outfile.write(str(i))
+            else:
+                outfile.write(line)
+            outfile.write(' renamed{0:08d}.ts'.format(j))
+            j += 1
+            outfile.write('\n')
+    return
+
 def filecount(m3u8):
     count = 0
     for i, line in enumerate(m3u8):
@@ -102,9 +116,14 @@ if filename.endswith('m3u8'):
     # output website with links
     with open('video_urls_' + str(media_id) + '.html', 'w') as outfile:
         write_urls(outfile, m3u8)
-        
+    with open('video_rename_' + str(media_id) + '.bat', 'w') as outfile:
+        write_rename(outfile, m3u8)
+       
     print 'split file, urls in video_urls_' + str(media_id) + '.html'
     print str(filecount(m3u8)) + ' files'
+    print ''
+    print 'rename to proper order with:'
+    print 'video_rename_' + str(media_id) + '.bat'
     print ''
     print 'combine ts files with:'
     print 'copy /b *.ts ' + str(media_id) + '.ts'
