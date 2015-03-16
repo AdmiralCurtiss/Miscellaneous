@@ -25,22 +25,6 @@ def write_urls(outfile, m3u8, dta=False):
     outfile.write('</body></html>')
     return
 
-def write_ffmpeg_concat(outfile, m3u8, dta=False):
-    for i, line in enumerate(m3u8):
-        if line.strip() != '' and not line.startswith('#'):
-            outfile.write("file '")
-            if dta:
-                splitline = line.split('.')
-                outfile.write('.'.join(splitline[:len(splitline)-1]))
-                outfile.write('_')
-                outfile.write(str(i))
-                outfile.write('.')
-                outfile.write(splitline[len(splitline)-1])
-            else:
-                outfile.write(line)
-            outfile.write("'\n")
-    return
-
 def filecount(m3u8):
     count = 0
     for i, line in enumerate(m3u8):
@@ -96,7 +80,7 @@ profiles = json.loads(video['video'][0]['media_profiles'])
 filename = profiles[0]['url']
 username = video['video'][0]['media_user_name']
 
-print username + ' playing ' + video['video'][0]['category_name']
+print username + ' playing ' + str(video['video'][0]['category_name'])
 print video['video'][0]['media_title']
 print 'Date/Time: ' + video['video'][0]['media_date_added']
 print 'Length:    ' + video['video'][0]['media_duration_format']
@@ -129,7 +113,7 @@ if filename.endswith('m3u8'):
     print 'ffmpeg -i ' + str(media_id) + '.ts -codec copy -bsf:a aac_adtstoasc hitbox_' + username + '_' + str(media_id) + '.mp4'
     print ''
     
-    print 'clean up this mess with video_cleanup_' + str(media_id) + '.bat'
+    print 'clean up with video_cleanup_' + str(media_id) + '.bat'
     with open('video_cleanup_' + str(media_id) + '.bat', 'w') as outfile:
         write_cleanup(outfile, m3u8, media_id)
     
