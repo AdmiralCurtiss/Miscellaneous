@@ -33,7 +33,8 @@ function Add(clip c, int frame, int count) {
     return c1 ++ cn.Loop(count) ++ c2
 }
 
-function Drop(clip c, int frame, int count) {
+function Drop(clip c, int frame, int "count") {
+    count = Defined(count) ? count : 1
     c1 = c.Trim(0, frame)
     c2 = c.Trim(frame+count+1, 0)
     return c1++c2
@@ -137,6 +138,14 @@ function LoadHDPVR(string path) {
     vid = AVCSource(path)
     aud = NicAC3Source(path + " PID 1100 2_0ch 48KHz 384Kbps DELAY -18ms.ac3")
     vid = AudioDub(vid, aud)
+    return vid
+}
+
+function LoadFFmpeg59(string path) {
+    FFIndex(path)
+    a = FFAudioSource(path)
+    vid = FFVideoSource(path, threads = 1, fpsnum = 60000, fpsden = 1001)
+    vid = vid.AudioDub(a)
     return vid
 }
 
