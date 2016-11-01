@@ -136,7 +136,7 @@ function FadeOutAudio(clip c, int frames) { return c.AudioDub(c.FadeOut(frames))
 
 function LoadHDPVR(string path) {
     vid = AVCSource(path)
-    aud = NicAC3Source(path + " PID 1100 2_0ch 48KHz 384Kbps DELAY -18ms.ac3")
+    aud = NicAC3Source(path + " PID 1100 2_0ch 48KHz 384Kbps DELAY -18ms.ac3").DelayAudio(0.018)
     vid = AudioDub(vid, aud)
     return vid
 }
